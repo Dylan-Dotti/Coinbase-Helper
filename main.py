@@ -1,8 +1,8 @@
+from position import Position
 from transaction import Transaction
 from portfolio_service import PortfolioService
 from client_service import ClientService
 from transaction_service import TransactionService
-import json
 
 
 def print_positions(positions):
@@ -15,23 +15,23 @@ def print_positions(positions):
         print()
 
 
+def print_position_stats(pos: Position) -> None:
+    print('Avg purchase price: $' + str(round(pos.get_avg_purchase_price(), 2)))
+    print('Purchase total: $' + str(pos.get_purchase_total()))
+    print('Current total: $' + str(round(pos.get_total_value(), 2)))
+    print('Total profit: $' + str(round(pos.get_total_profit(), 2)))
+    print('Percentage gain:', str(round(pos.get_total_profit() /
+                                        pos.get_purchase_total() * 100, 2)) + '%')
+
+
 client = ClientService.login()
-
-positions = PortfolioService.get_positions()
-positions_total_value: float = sum(
-    map(lambda p: p.get_total_value(), positions))
-
-accounts = PortfolioService.get_accounts()
-account_purchase_total = 0
-for account in accounts:
-    transactions = TransactionService.get_transactions(account['id'])
-    transaction_values = map(lambda t: t.get_value_usd(), transactions)
-    transaction_values_sum = sum(transaction_values)
-    account_purchase_total += transaction_values_sum
-total_profit = positions_total_value - account_purchase_total
 print()
-print('Account purchase total: $' + str(account_purchase_total))
-print('Account current total: $' + str(round(positions_total_value, 2)))
-print('Total profit: $' + str(round(total_profit, 2)))
-print('Percentage gain:', str(round(total_profit /
-                                    account_purchase_total * 100, 2)) + '%')
+positions = PortfolioService.get_positions()
+for pos in positions:
+    print(pos.get_currency().get_name(), 'statistics:')
+    print_position_stats(pos)
+    print()
+print('Portfolio total statistics:')
+account_total = PortfolioService.get_portfolio_total_position()
+print_position_stats(account_total)
+print()
